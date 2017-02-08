@@ -284,6 +284,8 @@ const char *mg_version(void);
 //   mg_md5(buf, "aa", "bb", NULL);
 void mg_md5(char buf[33], ...);
 
+/// @author khm@deif.com
+int mg_check_authorization(struct mg_connection *conn);
 
 #ifdef __cplusplus
 }

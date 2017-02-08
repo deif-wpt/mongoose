@@ -2391,6 +2391,7 @@ static int check_authorization(struct mg_connection *conn, const char *path) {
   return authorized;
 }
 
+
 static void send_authorization_request(struct mg_connection *conn) {
   conn->status_code = 401;
   mg_printf(conn,
@@ -2400,6 +2401,18 @@ static void send_authorization_request(struct mg_connection *conn) {
             "realm=\"%s\", nonce=\"%lu\"\r\n\r\n",
             conn->ctx->config[AUTHENTICATION_DOMAIN],
             (unsigned long) time(NULL));
+}
+
+int mg_check_authorization(struct mg_connection *conn)
+{
+   int authorized = 1;
+   char path[PATH_MAX];
+   struct file file = STRUCT_FILE_INITIALIZER;
+   convert_uri_to_file_name(conn, path, sizeof(path),&file);
+   authorized = check_authorization(conn, path);
+   if( !authorized )
+      send_authorization_request(conn);
+   return authorized;
 }
 
 static int is_authorized_for_put(struct mg_connection *conn) {
@@ -4815,6 +4828,7 @@ static void process_new_connection(struct mg_connection *conn) {
     }
     if (ri->remote_user != NULL) {
       free((void *) ri->remote_user);
+      ri->remote_user = NULL;
     }
 
     // NOTE(lsm): order is important here. should_keep_alive() call
